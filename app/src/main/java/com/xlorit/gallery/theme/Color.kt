@@ -1,4 +1,4 @@
-package com.xlorit.gallery.ui.theme
+package com.xlorit.gallery.theme
 
 import androidx.compose.ui.graphics.Color
 
