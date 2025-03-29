@@ -12,9 +12,9 @@ class UploadMediaUseCase @Inject constructor(
     private val mediaRepository: MediaRepository
 ) : UseCase<UploadMediaUseCase.Params, Flow<Resource<MediaItem>>>() {
 
-    data class Params(val fileUri: Uri)
+    data class Params(val fileUri: Uri, val type: String)
 
     override suspend fun invoke(params: Params): Flow<Resource<MediaItem>> {
-        return mediaRepository.uploadMedia(params.fileUri)
+        return mediaRepository.uploadMedia(params.fileUri, params.type)
     }
 }

@@ -6,5 +6,7 @@ import com.xlorit.gallery.feature_gallery.domain.model.MediaItem
 import kotlinx.coroutines.flow.Flow
 
 interface MediaRepository {
-    fun uploadMedia(fileUri: Uri): Flow<Resource<MediaItem>>
+    fun uploadMedia(fileUri: Uri, type: String): Flow<Resource<MediaItem>>
+
+    fun getUserMedia(): Flow<Resource<List<MediaItem>>>
 }

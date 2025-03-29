@@ -5,7 +5,7 @@ data class UserModel(
     val name: String = "",
     val email: String = ""
 ) {
-    // Companion object to create UserModel from Firestore DocumentSnapshot manually
+
     companion object {
         fun fromFirestore(data: Map<String, Any?>): UserModel {
             return UserModel(

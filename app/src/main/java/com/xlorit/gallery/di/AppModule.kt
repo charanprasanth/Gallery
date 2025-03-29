@@ -17,7 +17,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
-//Binding Module for Repositories
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class AppModule {
@@ -35,7 +34,6 @@ abstract class AppModule {
     ): MediaRepository
 }
 
-//Firebase Dependencies
 @Module
 @InstallIn(SingletonComponent::class)
 object FirebaseModule {
@@ -53,7 +51,6 @@ object FirebaseModule {
     fun provideFirebaseStorage(): FirebaseStorage = FirebaseStorage.getInstance()
 }
 
-//Use Cases
 @Module
 @InstallIn(SingletonComponent::class)
 object UseCaseModule {

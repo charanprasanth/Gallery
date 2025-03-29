@@ -4,14 +4,12 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
@@ -22,8 +20,11 @@ import androidx.navigation.NavController
 import com.xlorit.gallery.R
 import com.xlorit.gallery.core.data.Resource
 import com.xlorit.gallery.feature_auth.presentation.AuthViewModel
-import com.xlorit.gallery.feature_gallery.presentation.components.ImageItem
+import com.xlorit.gallery.feature_gallery.domain.model.MediaItem
+import com.xlorit.gallery.feature_gallery.presentation.components.ErrorComposable
+import com.xlorit.gallery.feature_gallery.presentation.components.LoaderComposable
 import com.xlorit.gallery.feature_gallery.presentation.components.LogoutDialog
+import com.xlorit.gallery.feature_gallery.presentation.components.MediaItemComposable
 import com.xlorit.gallery.feature_gallery.presentation.components.UploadMediaDialog
 import com.xlorit.gallery.navigation.Screens
 
@@ -34,20 +35,14 @@ fun GalleryScreen(
     galleryViewModel: GalleryViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val imageList = listOf(
-        R.drawable.test1,
-        R.drawable.test2,
-        R.drawable.test3,
-        R.drawable.test4,
-        R.drawable.test5,
-        R.drawable.test6
-    )
 
     val configuration = LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp.dp
     val columnCount = (screenWidthDp / 150.dp).toInt().coerceAtLeast(2)
 
     var showLogoutDialog by remember { mutableStateOf(false) }
+
+    val mediaItems by galleryViewModel.mediaItems.collectAsState()
 
     var showUploadDialog by remember { mutableStateOf(false) }
     val selectedFile by galleryViewModel.selectedFile.collectAsState()
@@ -66,9 +61,12 @@ fun GalleryScreen(
                     showUploadDialog = false
                     Toast.makeText(context, "Upload Successful", Toast.LENGTH_SHORT).show()
                 }
+
                 is Resource.Error -> {
-                    Toast.makeText(context, state.message ?: "Upload Failed", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, state.message ?: "Upload Failed", Toast.LENGTH_SHORT)
+                        .show()
                 }
+
                 else -> {}
             }
         }
@@ -111,18 +109,35 @@ fun GalleryScreen(
             }
         }
     ) { paddingValues ->
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(columnCount),
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = PaddingValues(16.dp)
-        ) {
-            items(imageList) { imageRes ->
-                ImageItem(imageRes)
+        when (mediaItems) {
+            is Resource.Loading -> LoaderComposable()
+            is Resource.Error -> ErrorComposable("Error Loading Media")
+            is Resource.Success -> {
+                val items = (mediaItems as Resource.Success<List<MediaItem>>).data ?: arrayListOf()
+                if (items.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No Items found")
+                    }
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(columnCount),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        contentPadding = PaddingValues(16.dp)
+                    ) {
+                        items(items) { mediaItem ->
+                            MediaItemComposable(mediaItem)
+                        }
+                    }
+                }
             }
+            else -> Box(modifier = Modifier)
         }
     }
 
@@ -130,7 +145,7 @@ fun GalleryScreen(
         UploadMediaDialog(
             selectedFile = selectedFile,
             onPickFile = { filePickerLauncher.launch(arrayOf("image/*", "video/*")) },
-            onUpload = { galleryViewModel.uploadMedia() },
+            onUpload = { galleryViewModel.uploadMedia(context) },
             onDismiss = { showUploadDialog = false },
             uploadState = uploadState
         )
