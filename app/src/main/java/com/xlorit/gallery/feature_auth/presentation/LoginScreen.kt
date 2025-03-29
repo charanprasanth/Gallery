@@ -28,10 +28,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.xlorit.gallery.core.data.Resource
+import com.xlorit.gallery.navigation.Screens
 
 @Composable
-fun LoginScreen(viewModel: AuthViewModel = hiltViewModel()) {
+fun LoginScreen(
+    navController: NavController,
+    viewModel: AuthViewModel = hiltViewModel()
+) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
@@ -77,10 +82,12 @@ fun LoginScreen(viewModel: AuthViewModel = hiltViewModel()) {
 
         when (authState) {
             is Resource.Idle -> {}
-            is Resource.Loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+            is Resource.Loading -> {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+            }
             is Resource.Success -> {
-                LaunchedEffect(Unit) {
-                    println("Login successful!") // ✅ Log success
+                navController.navigate(Screens.GALLERY) {
+                    popUpTo(Screens.LOGIN) { inclusive = true }
                 }
             }
             is Resource.Error -> {
@@ -120,14 +127,12 @@ fun LoginScreen(viewModel: AuthViewModel = hiltViewModel()) {
             },
             modifier = Modifier
                 .padding(top = 16.dp)
-                .clickable { println("Sign up clicked!") } // ✅ Log sign-up click
+                .clickable {
+                    navController.navigate(Screens.REGISTER) {
+                        popUpTo(Screens.LOGIN) { inclusive = true }
+                    }
+                }
                 .align(Alignment.CenterHorizontally)
         )
     }
-}
-
-@Preview
-@Composable
-private fun LoginScreenPreview() {
-    LoginScreen()
 }

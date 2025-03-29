@@ -2,6 +2,7 @@ package com.xlorit.gallery.feature_auth.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.xlorit.gallery.core.data.Resource
 import com.xlorit.gallery.feature_auth.data.model.UserModel
 import com.xlorit.gallery.feature_auth.domain.use_case.LoginUseCase
@@ -36,5 +37,13 @@ class AuthViewModel @Inject constructor(
                 _authState.value = result
             }
         }
+    }
+
+    fun checkLoggedIn(): Boolean {
+        return FirebaseAuth.getInstance().currentUser?.uid != null
+    }
+
+    fun logout() {
+        return FirebaseAuth.getInstance().signOut()
     }
 }

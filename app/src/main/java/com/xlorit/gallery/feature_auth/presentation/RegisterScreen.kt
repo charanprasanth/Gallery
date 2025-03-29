@@ -19,10 +19,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.xlorit.gallery.core.data.Resource
+import com.xlorit.gallery.navigation.Screens
 
 @Composable
-fun RegisterScreen(viewModel: AuthViewModel = hiltViewModel()) {
+fun RegisterScreen(
+    navController: NavController,
+    viewModel: AuthViewModel = hiltViewModel(),
+) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -90,10 +95,11 @@ fun RegisterScreen(viewModel: AuthViewModel = hiltViewModel()) {
             is Resource.Idle -> {}
             is Resource.Loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
             is Resource.Success -> {
-                LaunchedEffect(Unit) {
-                    println("Register successful!") // ✅ Register success
+                navController.navigate(Screens.GALLERY) {
+                    popUpTo(Screens.REGISTER) { inclusive = true }
                 }
             }
+
             is Resource.Error -> {
                 errorMessage = (authState as Resource.Error).message ?: "Unknown error"
             }
@@ -137,18 +143,12 @@ fun RegisterScreen(viewModel: AuthViewModel = hiltViewModel()) {
             },
             modifier = Modifier
                 .padding(top = 16.dp)
-                .clickable { onLoginClick() }
+                .clickable {
+                    navController.navigate(Screens.LOGIN) {
+                        popUpTo(Screens.REGISTER) { inclusive = true }
+                    }
+                }
                 .align(Alignment.CenterHorizontally)
         )
     }
-}
-
-fun onLoginClick() {
-    // Handle login navigation
-}
-
-@Preview
-@Composable
-private fun RegisterScreenPreview() {
-    RegisterScreen()
 }
